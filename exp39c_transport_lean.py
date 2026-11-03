@@ -17,7 +17,7 @@ from safetensors import safe_open
 import jlens
 
 OUT = Path("runs/exp39")
-HF = "/Volumes/evol/hf_cache/hub/models--Qwen--Qwen3-14B/snapshots"
+HF = "./hf_cache/hub/models--Qwen--Qwen3-14B/snapshots"
 
 def find_st():
     snap = Path(HF)
@@ -42,19 +42,19 @@ print("W14 shape:", emb.shape, emb.dtype, flush=True)
 W14 = emb.float()
 
 lens14 = jlens.JacobianLens.load(
-    "/Volumes/evol/jlens/qwen3-14b_jacobian_lens.pt")
+    "./jlens/qwen3-14b_jacobian_lens.pt")
 lens4 = jlens.JacobianLens.load(
-    "/Volumes/evol/jlens/qwen3-4b_jacobian_lens.pt")
+    "./jlens/qwen3-4b_jacobian_lens.pt")
 d4 = json.load(open(OUT / "broad_pain_direction.json"))
 v4 = torch.tensor(d4["pain_v"])
 
 W4 = torch.load(
-    "/Volumes/evol/hf_cache/hub/models--Qwen--Qwen3-4B/snapshots",
+    "./hf_cache/hub/models--Qwen--Qwen3-4B/snapshots",
     map_location="cpu") if False else None
 # 4B lm_head from its own safetensors
 snap4 = None
 for d in Path(
-        "/Volumes/evol/hf_cache/hub/models--Qwen--Qwen3-4B/snapshots"
+        "./hf_cache/hub/models--Qwen--Qwen3-4B/snapshots"
 ).iterdir():
     for f in sorted(d.glob("*.safetensors")):
         if "model-00001" in f.name or "model.safetensors" == f.name:

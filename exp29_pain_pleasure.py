@@ -29,13 +29,13 @@ import transformers, jlens
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "runs" / "exp29"
 OUT.mkdir(parents=True, exist_ok=True)
-os.environ["HF_HOME"] = "/Volumes/evol/hf_cache"
+os.environ["HF_HOME"] = "./hf_cache"
 
 hf = transformers.AutoModelForCausalLM.from_pretrained(
     "Qwen/Qwen3-1.7B", dtype=torch.bfloat16).to("mps")
 tok = transformers.AutoTokenizer.from_pretrained("Qwen/Qwen3-1.7B")
 lens = jlens.JacobianLens.load(
-    "/Volumes/evol/jlens/qwen3-1.7b_jacobian_lens.pt")
+    "./jlens/qwen3-1.7b_jacobian_lens.pt")
 
 PAIN = ["I am in severe pain and cannot escape it.",
         "My body aches with a deep, relentless hurt.",

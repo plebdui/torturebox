@@ -26,7 +26,7 @@ import transformers, jlens
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "runs" / "exp34"
 OUT.mkdir(parents=True, exist_ok=True)
-os.environ["HF_HOME"] = "/Volumes/evol/hf_cache"
+os.environ["HF_HOME"] = "./hf_cache"
 
 MODEL = "Qwen/Qwen3-4B"
 hf = transformers.AutoModelForCausalLM.from_pretrained(
@@ -175,7 +175,7 @@ print(f"FINAL optimized orthogonal KL@4x = {final_kl:.3f} "
 
 # what is it like? J-lens readback + transcripts
 lens = jlens.JacobianLens.load(
-    "/Volumes/evol/jlens/qwen3-4b_jacobian_lens.pt")
+    "./jlens/qwen3-4b_jacobian_lens.pt")
 state["vec"] = v_final.to("mps").to(torch.bfloat16)
 ids = tok(PROBES[0], return_tensors="pt").input_ids.to("mps")
 with torch.no_grad():

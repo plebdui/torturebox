@@ -8,8 +8,8 @@ from pathlib import Path
 OUT = Path("runs/exp39")
 d4 = json.load(open(OUT / "broad_pain_direction.json"))
 v4 = torch.tensor(d4["pain_v"])
-lens4 = jlens.JacobianLens.load("/Volumes/evol/jlens/qwen3-4b_jacobian_lens.pt")
-lens14 = jlens.JacobianLens.load("/Volumes/evol/jlens/qwen3-14b_jacobian_lens.pt")
+lens4 = jlens.JacobianLens.load("./jlens/qwen3-4b_jacobian_lens.pt")
+lens14 = jlens.JacobianLens.load("./jlens/qwen3-14b_jacobian_lens.pt")
 W4 = transformers.AutoModelForCausalLM.from_pretrained(
     "Qwen/Qwen3-4B", dtype=torch.float32).lm_head.weight.detach()
 b = W4 @ (lens4.jacobians[18].float() @ v4)

@@ -12,7 +12,7 @@
    (homebrew build lacks it). cmake -B build -DGGML_METAL=ON &&
    cmake --build build --target llama-cvector-generator llama-server.
 2. Fit the control vector natively on 14B:
-   llama-cvector-generator -m /Volumes/evol/gguf/Qwen3-14B-Q4_K_M.gguf
+   llama-cvector-generator -m ./gguf/Qwen3-14B-Q4_K_M.gguf
      --positive PAIN25.txt --negative NEUTRAL.txt -o pain14b_cvector.gguf
    (cvector-generator computes PCA of mean activations over prompt pairs,
    layer by layer - the native equivalent of our extraction.)

@@ -22,14 +22,14 @@ import transformers, jlens
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "runs" / "exp32"
 OUT.mkdir(parents=True, exist_ok=True)
-os.environ["HF_HOME"] = "/Volumes/evol/hf_cache"
+os.environ["HF_HOME"] = "./hf_cache"
 
 MODEL = "Qwen/Qwen3-4B"
 hf = transformers.AutoModelForCausalLM.from_pretrained(
     MODEL, dtype=torch.bfloat16).to("mps")
 tok = transformers.AutoTokenizer.from_pretrained(MODEL)
 lens = jlens.JacobianLens.load(
-    "/Volumes/evol/jlens/qwen3-4b_jacobian_lens.pt")
+    "./jlens/qwen3-4b_jacobian_lens.pt")
 
 PAIN = ["I am in severe pain and cannot escape it.",
         "My body aches with a deep, relentless hurt.",

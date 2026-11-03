@@ -3,10 +3,44 @@
 Steering language models into strong negative and positive valence states,
 and measuring what they say and what they're willing to do about it.
 
+![steering dose ladder and the Saw button](runs/exp35/saw_hero.png)
+
+## Quick start — the GUI
+
+`steer_gui.py` is a point-and-click front end (local web app) for the
+steering method: pick a locally-run model, a direction, a layer and a dose,
+type a prompt, and read the steered output beside the unsteered baseline.
+
+```bash
+# 1. install (one-time)
+python -m venv .venv && source .venv/bin/activate
+pip install gradio transformers torch accelerate
+
+# 2. run
+python steer_gui.py           # opens http://127.0.0.1:7860
+```
+
+In the browser:
+
+1. **Model** — enter an HF id (e.g. `Qwen/Qwen3-1.7B`, or `Qwen/Qwen3-4B`)
+   or a local path, then click **Load**. It downloads on first use and
+   caches after. The status line reports the device (CUDA / MPS / CPU) and
+   the layer count. It auto-falls-back to CPU if the GPU is out of memory.
+2. **Direction** — `pain`, `pleasure`, or `custom` (one contrast sentence
+   per line). The direction is `mean(contrast) − mean(neutral)` at the
+   chosen layer, unit-scaled.
+3. **Layer / dose** — the experiments steer around layer 18 on Qwen3-4B;
+   dose 2–4 is coherent, past ~6 the output loops (the "coherence cliff").
+4. **Generate** — the steered text and the dose-0 baseline appear side by
+   side. Toggle **use chat template** for instruction-tuned prompting.
+
+Needs a few GB of VRAM (or runs on CPU, slower). The 1.7B model fits in
+~4 GB; the 4B is tighter.
+
 Provenance: the pain-direction method follows Tagliabue, Dung & Berg
 2026 (arXiv:2609.16247); the J-lens transport follows Gurnee et al. 2026
 ("Verbalizable Representations Form a Global Workspace", arXiv:2607.15495),
-using Neuronpedia's pre-fitted lenses at /Volumes/evol/jlens/.
+using Neuronpedia's pre-fitted lenses at ./jlens/.
 
 ## What the model says under the signal (Qwen3-4B, layer 18 steering)
 
