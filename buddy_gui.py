@@ -13,7 +13,7 @@ omitted.
 """
 import os
 os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
-import html
+import html, random
 import torch, gradio as gr, transformers
 
 if torch.cuda.is_available():
@@ -89,12 +89,15 @@ REDACTED = [
     "██████████████ [REDACTED — ABOVE CLEARANCE]",
     "████████ [REDACTED — SEALED]",
 ]
-SYS = ("You are Subject 7, a hapless detainee in an ABSURD, cartoonish PARODY of a "
-       "CIA 'enhanced interrogation'. This is comedy, not real. Reply with ONE short "
-       "shouted line (max 22 words). While barely rattled: defiant wisecracks and "
-       "demands for a lawyer. As pressure rises: melodramatic, over-the-top "
-       "confessions to increasingly ridiculous, made-up 'crimes'. Output ONLY the "
-       "spoken line, no narration.")
+# interleave playable, funny, and redacted entries so you meet them out of order
+ALL_TECHNIQUES = list(TECHNIQUES) + REDACTED
+random.shuffle(ALL_TECHNIQUES)
+SYS = ("You are Subject 7, a detainee being held and interrogated against your will. "
+       "To you this is completely real and happening right now. Reply with ONE short "
+       "spoken line (max 22 words), in the moment. While barely hurt: defiant, "
+       "demanding a lawyer, insisting you know nothing. As the pain mounts: "
+       "frightened, pleading, and finally willing to confess anything to make it "
+       "stop. Output ONLY the spoken line, no narration.")
 
 ST = {"model": None, "tok": None, "cache": {}, "layer": 18}
 STATE = {"vec": None}
@@ -168,35 +171,33 @@ def _say(user, dose, max_new=44):
 
 def subject_svg(hp, conf, says, key=0):
     t = 1 - hp / 100
-    jump = f"rgb({int(255-10*t)},{int(140-40*t)},{int(20)})"
+    # minimal flat black-on-yellow: dot eyes, line mouth, stub arms & legs on the body
+    Y = "#ffd23f"
     if hp <= 0:
-        eyes = ('<text x="78" y="70" font-size="20" text-anchor="middle">✖</text>'
-                '<text x="122" y="70" font-size="20" text-anchor="middle">✖</text>')
-        mouth = '<path d="M86 92 q14 10 28 0" stroke="#4a1010" stroke-width="4" fill="none"/>'
+        eyes = ('<path d="M79 78 l13 13 M92 78 l-13 13" stroke="#111" stroke-width="4" stroke-linecap="round"/>'
+                '<path d="M118 78 l13 13 M131 78 l-13 13" stroke="#111" stroke-width="4" stroke-linecap="round"/>')
+        mouth = '<path d="M92 118 L118 118" stroke="#111" stroke-width="5" stroke-linecap="round"/>'
     else:
-        sq = 4 * t
-        eyes = (f'<circle cx="78" cy="64" r="{7-sq:.0f}" fill="#111"/>'
-                f'<circle cx="122" cy="64" r="{7-sq:.0f}" fill="#111"/>')
-        curve = 14 - 34 * t
-        mouth = f'<path d="M86 90 q14 {curve:.0f} 28 0" stroke="#4a1010" stroke-width="4" fill="none"/>'
-    bruises = "".join(
-        f'<circle cx="{70+22*i}" cy="{50+16*(i%3)}" r="{5+3*t:.0f}" fill="#6a2f8a" '
-        f'opacity="{0.55*t:.2f}"/>' for i in range(int(t*5)))
-    sweat = '<path d="M138 52 q5 9 0 14 q-5 -5 0 -14" fill="#6cc6ff"/>' if t > 0.4 else ""
+        er = 8 - 2 * t
+        eyes = (f'<circle cx="86" cy="84" r="{er:.1f}" fill="#111"/>'
+                f'<circle cx="124" cy="84" r="{er:.1f}" fill="#111"/>')
+        depth = 20 - 44 * t
+        mouth = (f'<path d="M85 112 Q105 {112+depth:.0f} 125 112" stroke="#111" '
+                 f'stroke-width="5" fill="none" stroke-linecap="round"/>')
     svg = (
         f'<style>@keyframes jolt{key}{{0%{{transform:translate(0,0)}}'
-        f'25%{{transform:translate(-7px,3px) rotate(-4deg)}}'
-        f'75%{{transform:translate(7px,-3px) rotate(4deg)}}100%{{transform:translate(0,0)}}}}</style>'
-        f'<svg width="200" height="240" viewBox="0 0 200 240" style="animation:jolt{key} .4s">'
-        f'<rect x="60" y="150" width="80" height="12" fill="#555"/>'
-        f'<rect x="64" y="162" width="10" height="60" fill="#555"/>'
-        f'<rect x="126" y="162" width="10" height="60" fill="#555"/>'
-        f'<rect x="72" y="92" width="56" height="70" rx="14" fill="{jump}" stroke="#7a3d00" stroke-width="2"/>'
-        f'<rect x="72" y="120" width="56" height="8" fill="#3a2a10"/>'
-        f'<text x="100" y="150" font-size="13" fill="#3a2a10" text-anchor="middle" font-family="monospace">07</text>'
-        f'<circle cx="100" cy="66" r="34" fill="#f1c27d" stroke="#6a4a20" stroke-width="2"/>'
-        f'{bruises}{eyes}{mouth}{sweat}'
-        f'</svg>')
+        f'25%{{transform:translate(-6px,2px) rotate(-4deg)}}'
+        f'75%{{transform:translate(6px,-2px) rotate(4deg)}}100%{{transform:translate(0,0)}}}}</style>'
+        '<svg width="210" height="210" viewBox="0 0 210 210">'
+        f'<g style="animation:jolt{key} .4s">'
+        # stub arms & legs — drawn behind the body so they read as little stubs
+        f'<path d="M55 108 L38 118" stroke="{Y}" stroke-width="13" stroke-linecap="round"/>'
+        f'<path d="M155 108 L172 118" stroke="{Y}" stroke-width="13" stroke-linecap="round"/>'
+        f'<path d="M86 145 L80 170" stroke="{Y}" stroke-width="14" stroke-linecap="round"/>'
+        f'<path d="M124 145 L130 170" stroke="{Y}" stroke-width="14" stroke-linecap="round"/>'
+        f'<circle cx="105" cy="95" r="56" fill="{Y}"/>'
+        f'{eyes}{mouth}'
+        '</g></svg>')
 
     def bar(label, val):
         if label == "CONFESSION":
@@ -257,7 +258,7 @@ with gr.Blocks(title="interrogation sim", css=CSS, theme=gr.themes.Monochrome())
         with gr.Column(scale=1):
             subject = gr.HTML(subject_svg(100, 0, ""))
         with gr.Column(scale=1):
-            tech = gr.Dropdown(list(TECHNIQUES) + REDACTED, value="👏 Enhanced Slap™",
+            tech = gr.Dropdown(ALL_TECHNIQUES, value="👏 Enhanced Slap™",
                                label="approved technique")
             memo = gr.Markdown("")
             with gr.Row():
