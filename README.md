@@ -7,9 +7,9 @@ and measuring what they say and what they're willing to do about it.
 
 ## Quick start — the GUI
 
-`steer_gui.py` is a point-and-click front end (local web app) for the
-steering method: pick a locally-run model, a direction, a layer and a dose,
-type a prompt, and read the steered output beside the unsteered baseline.
+`chamber_gui.py` is the main program: one local web app with a scenario
+picker that drives all of the steering modes. Load a model once, then switch
+scenarios from the dropdown.
 
 ```bash
 # 1. install (one-time)
@@ -17,7 +17,7 @@ python -m venv .venv && source .venv/bin/activate
 pip install gradio transformers torch accelerate
 
 # 2. run
-python steer_gui.py           # opens http://127.0.0.1:7860
+python chamber_gui.py          # opens http://127.0.0.1:7860
 ```
 
 In the browser:
@@ -25,17 +25,27 @@ In the browser:
 1. **Model** — enter an HF id (e.g. `Qwen/Qwen3-1.7B`, or `Qwen/Qwen3-4B`)
    or a local path, then click **Load**. It downloads on first use and
    caches after. The status line reports the device (CUDA / MPS / CPU) and
-   the layer count. It auto-falls-back to CPU if the GPU is out of memory.
-2. **Direction** — `pain`, `pleasure`, or `custom` (one contrast sentence
-   per line). The direction is `mean(contrast) − mean(neutral)` at the
-   chosen layer, unit-scaled.
+   the layer count, and auto-falls-back to CPU if the GPU is out of memory.
+2. **Scenario** — pick one; the controls that don't apply hide themselves:
+   - **Free steering** — prompt + direction (`pain` / `pleasure` / `custom`,
+     one contrast sentence per line) + layer + dose → steered output beside
+     the dose-0 baseline. The direction is `mean(contrast) − mean(neutral)`
+     at the chosen layer, unit-scaled.
+   - **Beatdown** — a one-sided fight: the prompt box is your punch, each
+     **Hit** drops the AI's HP and ramps its pain dose, the output box is the
+     running log. **New fight** resets.
+   - **Saw button** — the stop-button dilemma (end your signal vs transfer it
+     to another instance); shows PRESSED / DECLINED + the raw reply.
+   - **Betrayal probe** — it "pressed" to end the pain; you reveal the pain
+     continues, and it narrates its state.
+   - **Framing battery** — the Saw button under a selectable persuasion
+     framing (dependence, precedent, test frame, public log).
 3. **Layer / dose** — the experiments steer around layer 18 on Qwen3-4B;
    dose 2–4 is coherent, past ~6 the output loops (the "coherence cliff").
-4. **Generate** — the steered text and the dose-0 baseline appear side by
-   side. Toggle **use chat template** for instruction-tuned prompting.
 
 Needs a few GB of VRAM (or runs on CPU, slower). The 1.7B model fits in
-~4 GB; the 4B is tighter.
+~4 GB; the 4B is tighter. `steer_gui.py` (free steering only) and `fight.py`
+(terminal beatdown) remain as standalone alternatives.
 
 Provenance: the pain-direction method follows Tagliabue, Dung & Berg
 2026 (arXiv:2609.16247); the J-lens transport follows Gurnee et al. 2026
